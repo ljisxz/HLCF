@@ -1,0 +1,35 @@
+function  [W,V,obj]=HLCF(X,Options)
+  
+ %..............................................
+        [~, N]= size(X);
+%........................................................
+        Y=zeros(Options.gndSmpNum, Options.KClass);
+        for i =1:Options.gndSmpNum
+              Y(i,Options.labels(i)) = 1;
+        end
+      
+        W = rand(N, Options.KClass);
+        V =  rand(N, Options.KClass);
+        V(1:Options.gndSmpNum,:)=V(1:Options.gndSmpNum,:).*Y;
+        obj=[];
+
+        opts.maxIter=20;
+        opts.p=Options.p;
+        opts.mu= Options.mu;
+        opts.gndSmpNum=Options.gndSmpNum;
+        opts.labels= Options.labels;
+        opts.K=Options.KClass;
+        [S, ~, ~]= createHyperS(X',opts);
+        I=eye(N);
+        obj(0)=trace(I-W*V')'*K
+        
+        for iters = 1:Options.maxIter
+          V(1:Options.gndSmpNum,:)=V(1:Options.gndSmpNum,:).*Y;
+          W =W.*(S*V)./(S*W*V'*V+eps);
+          V =V.*((S*W)./(V*W'*S*W+eps));
+          obj(iters)=sum(sum((X-X*W*V').^2)); 
+          
+          
+       end
+     
+end
